@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "name": "sanjeevani",
   "version": "1.0.0",
@@ -31,3 +32,38 @@
     "ws": "^8.18.0"
   }
 }
+=======
+{
+  "name": "sanjeevani",
+  "version": "1.0.0",
+  "description": "Submission for Hack-O-Octo 2.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon ./Backend/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@dfinity/agent": "^2.4.0",
+    "@dfinity/candid": "^2.4.0",
+    "@dfinity/principal": "^2.4.0",
+    "@google/generative-ai": "^0.21.0",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.5",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.10.0",
+    "nodemon": "^3.1.9",
+    "socket.io": "^4.8.1",
+    "twilio": "^5.4.2",
+    "winston": "^3.17.0",
+    "ws": "^8.18.0"
+  }
+}
+>>>>>>> 4e42eac (Added ICP and Frontend)

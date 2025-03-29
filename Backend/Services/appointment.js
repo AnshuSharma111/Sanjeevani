@@ -2,6 +2,7 @@ const Patient = require('../Models/patient').Patient; // Import patient model
 const Doctor = require('../Models/doctor').Doctor; // Import doctor model
 const Appointment = require('../Models/appointment').Appointment; // Import appointment model
 const smsEvents = require('../eventBus'); // Import event bus
+<<<<<<< HEAD
 
 let genai;
 
@@ -14,6 +15,10 @@ const specialities = {
     "b" : "Cardiologist",
     "c" : "Dermatologist"
 }
+=======
+const { generateResponse } = require("./genai.mjs"); // Import function to prompt model
+require("./genai.mjs"); // Import Model
+>>>>>>> 4e42eac (Added ICP and Frontend)
 
 const register = async (data) => {
     try {
@@ -24,6 +29,10 @@ const register = async (data) => {
         if (user) {
             console.log(`User ${from} already has an impending appointment`);
             smsEvents.emit("error", { errorCode: 0, user: from }); // Emit error if anything goes wrong
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4e42eac (Added ICP and Frontend)
             return;
         }
 
@@ -34,7 +43,11 @@ const register = async (data) => {
 
         console.log("Patient registered successfully"); // log
 
+<<<<<<< HEAD
         smsEvents.emit("book", { from: from }); // Emit patient Registered event
+=======
+        smsEvents.emit("book", { from: from }); // Emit patientRegistered event
+>>>>>>> 4e42eac (Added ICP and Frontend)
     } catch (error) {
         console.log(`An error occurred: ${error}`); // log error
         smsEvents.emit("error", { errorCode: -1, user: from }); // Emit error event
@@ -43,7 +56,11 @@ const register = async (data) => {
 
 const book = async (data) => {
     try {
+<<<<<<< HEAD
         const { from, code } = data;
+=======
+        const { from } = data;
+>>>>>>> 4e42eac (Added ICP and Frontend)
 
         // Check whether the patient has been regsitered or not
         const user = await Patient.findOne({ phoneno: from });
@@ -53,6 +70,7 @@ const book = async (data) => {
             return;
         }
 
+<<<<<<< HEAD
         const reqdSpeciality = specialities[code]; // Get the required speciality from the code
         if (!reqdSpeciality) {
             console.log(`Invalid doctor type code: ${code}`); // log error
@@ -70,13 +88,23 @@ const book = async (data) => {
                 doctor = doctors[i];
             }
         }
+=======
+        console.log('Finding Doctor...');
+
+        // Get the doctor with the earliest available empty slot
+        const doctor = await Doctor.findOne({ availableSlots: { $ne: [] } }).sort({ "availableSlots.0": 1 });
+>>>>>>> 4e42eac (Added ICP and Frontend)
     
         if (!doctor) {
             console.log("No available doctors");
             smsEvents.emit("error", { errorCode: 3, user: from }); // Emit error if anything goes wrong
             return;
         }
+<<<<<<< HEAD
 
+=======
+      
+>>>>>>> 4e42eac (Added ICP and Frontend)
         // Assign the first available slot
         console.log('Found Doctor, assigning slot...');
         const assignedSlot = doctor.availableSlots.shift();
@@ -91,13 +119,20 @@ const book = async (data) => {
         });
         // Assign appointment id to patient
         user.appointmentno = newAppointment._id;
+<<<<<<< HEAD
         user.status = "pending";
+=======
+>>>>>>> 4e42eac (Added ICP and Frontend)
         await user.save();
 
         console.log(`Appointment booked for ${from} with ${doctor.name} at ${assignedSlot}`);
 
+<<<<<<< HEAD
         const content = "Hello, you have an appointment with " + doctor.name + " at " + assignedSlot + ". Please reply with 1 to confirm or 2 to cancel.";
     
+=======
+        const content = "Hello, you have an appointment with " + doctor.name + " at " + assignedSlot + ". Please reply with 1 to confirm or 2 to cancel."; // Create the message content
+>>>>>>> 4e42eac (Added ICP and Frontend)
         // Emit event to send confirmation SMS
         smsEvents.emit("sendSMS", { content, to: from });
     }
@@ -171,6 +206,7 @@ const cancel = async (data) => {
         console.log("Getting booked time slot...");
 
         const doctor = await Doctor.findOne({ _id: appointment.doctorId });
+<<<<<<< HEAD
         // Sort slots in ascending order
         const convertTo24HourFormat = (slot) => {
             const [start, end] = slot.split("-");
@@ -190,12 +226,19 @@ const cancel = async (data) => {
             return convertTo24HourFormat(a).localeCompare(convertTo24HourFormat(b));
         });
 
+=======
+        doctor.availableSlots.push(appointment.timeSlot);
+>>>>>>> 4e42eac (Added ICP and Frontend)
         await doctor.save();
 
         console.log("Added time slot back to doctor's schedule...");
 
         // Delete the appointment and user
+<<<<<<< HEAD
         console.log("Deleting appointment and resetting user...");
+=======
+        console.log("Deleting appointment and user...");
+>>>>>>> 4e42eac (Added ICP and Frontend)
 
         let response = await Appointment.deleteOne({ patientId: patient._id });
         if (response.deletedCount == 0) { // Check if the appointment was deleted
@@ -204,9 +247,20 @@ const cancel = async (data) => {
             return;
         }
         console.log("Deleted appointment successfully.");
+<<<<<<< HEAD
 
         patient.appointmentno = null; // Reset appointment number
         console.log("Reset user...");
+=======
+        response = await Patient.deleteOne({ _id: patient._id });
+        if (response.deletedCount == 0) { // Check if the appointment was deleted
+            console.log("Could not delete patient.");
+            smsEvents.emit("error", { errorCode: -1, user: from }); // Emit error if anything goes wrong
+            return;
+        }
+        console.log("Deleted patient successfully.");
+
+>>>>>>> 4e42eac (Added ICP and Frontend)
         // Send SMS to the patient that appointment has been cancelled
         const content = "Hello, your appointment has been cancelled."; // Create the message content
         smsEvents.emit("sendSMS", { content, to: from }); // Send the confirmation SMS
@@ -217,6 +271,10 @@ const cancel = async (data) => {
     }
 }
 
+<<<<<<< HEAD
+=======
+// Handle unknown SMS
+>>>>>>> 4e42eac (Added ICP and Frontend)
 const guide = async (data) => {
     try {
         const { content, from } = data;
@@ -225,12 +283,17 @@ const guide = async (data) => {
 
         if (!content || !from) {
             console.log("No content or from!");
+<<<<<<< HEAD
             smsEvents.emit("error", { errorCode: -1, user: from });
             return;
+=======
+            smsEvents.emit("error", { errorCode: -1, user: from }); // SET LATER
+>>>>>>> 4e42eac (Added ICP and Frontend)
         }
 
         console.log("Generating response to unknown SMS...");
 
+<<<<<<< HEAD
         if (!genai) {
             console.log("genai module not loaded yet!");
             smsEvents.emit("error", { errorCode: -1, user: from });
@@ -251,11 +314,15 @@ const guide = async (data) => {
             The user sent: ${content}. Guide them accordingly.
             Under no circumstance should you divert from the topic of booking an appointment.
         `;
+=======
+        const prompt = "You are a chatbot that provides guidance to users trying to use an application booking system. The user needs to press 0 to book appointment, 1 to confirm appointment and 2 to cancel it. The user has sent content " + content + ". Guide them accordingly.";
+>>>>>>> 4e42eac (Added ICP and Frontend)
 
         const response = await generateResponse(prompt);
 
         if (!response) {
             console.log("Could not generate response!");
+<<<<<<< HEAD
             smsEvents.emit("error", { errorCode: -1, user: from });
             return;
         }
@@ -268,4 +335,17 @@ const guide = async (data) => {
     }
 };
 
+=======
+            smsEvents.emit("error", { errorCode: -1, user: from }); // SET LATER
+        }
+
+        console.log("Generated response " + response);
+
+        smsEvents.emit("sendSMS", { content: response, to: from });
+    } catch (error) {
+        console.log(`An error occurred: ${error}`); // log error
+        smsEvents.emit("error", { errorCode: -1, user: from }); // SET LATER
+    }
+}
+>>>>>>> 4e42eac (Added ICP and Frontend)
 module.exports = { register, book, confirm, cancel, guide }; // Export register and book functions

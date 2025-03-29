@@ -1,3 +1,8 @@
+<<<<<<< HEAD
 <resources>
     <string name="app_name">Sanjeevani</string>
+=======
+<resources>
+    <string name="app_name">Sanjeevani</string>
+>>>>>>> 4e42eac (Added ICP and Frontend)
 </resources>

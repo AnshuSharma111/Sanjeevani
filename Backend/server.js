@@ -7,7 +7,10 @@ const medicineRouter = require('./Routers/medicine');
 const smsRouter = require('./Routers/sms');
 const receiptRouter = require('./Routers/receipt');
 const appointmentRouter = require('./Routers/appointment');
+<<<<<<< HEAD
 const locationRouter = require('./Routers/location');
+=======
+>>>>>>> 4e42eac (Added ICP and Frontend)
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { Vendor:User } = require('./Models/vendor');
@@ -32,7 +35,11 @@ const logger = winston.createLogger({
 // Socket.IO setup
 const io = new Server(server, {
     cors: {
+<<<<<<< HEAD
       origin: "*", // Replace with your frontend URL
+=======
+      origin: "http://localhost:3000", // Replace with your frontend URL
+>>>>>>> 4e42eac (Added ICP and Frontend)
       methods: ["GET", "POST", "PATCH", "DELETE"],
       credentials: true
     },
@@ -76,12 +83,21 @@ const io = new Server(server, {
 });
 
 // Middleware
+<<<<<<< HEAD
 app.use(cors({ 
     origin: "*",
+=======
+app.use(cors({
+    origin: 'http://127.0.0.1:5173', // Allows requests from any origin
+>>>>>>> 4e42eac (Added ICP and Frontend)
     methods: ['GET', 'POST', 'PATCH', 'DELETE']
 }));
 app.use(express.json());
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4e42eac (Added ICP and Frontend)
 // Routes
 app.get('/', (req, res) => {
     res.send('Welcome to the Inventory Management API');
@@ -114,7 +130,10 @@ app.use('/api/medicine', medicineRouter);
 app.use('/api/sms', smsRouter);
 app.use('/api/receipt', receiptRouter);
 app.use('/api/appointment', appointmentRouter);
+<<<<<<< HEAD
 app.use('/api/location',locationRouter);
+=======
+>>>>>>> 4e42eac (Added ICP and Frontend)
 
 // Error handling middleware
 const errorHandler = (err, req, res, next) => {
