@@ -1,8 +1,11 @@
+<<<<<<< HEAD
 const Patient = require('../Models/patient').Patient; // Import patient model
 const Doctor = require('../Models/doctor').Doctor; // Import doctor model
 const Appointment = require('../Models/appointment').Appointment; // Import appointment model
 const smsEvents = require('../eventBus'); // Import event bus
 
+=======
+>>>>>>> 4e42eac (Added ICP and Frontend)
 const errorHandler = async (data) => {
     const { errorCode, user } = data; // Extract error code from the request. Code, Phone Number
 
@@ -62,6 +65,7 @@ const errorHandler = async (data) => {
         // Emit event to send confirmation SMS
         smsEvents.emit("sendSMS", { content, to: user });
     }
+<<<<<<< HEAD
     // Error Code 4: Invalid specilization code
     else if (errorCode == 4) {
         console.log("Sending SMS informing user of invalid specialization code..."); // Log the message
@@ -72,6 +76,8 @@ const errorHandler = async (data) => {
         // Emit event to send confirmation SMS
         smsEvents.emit("sendSMS", { content, to: user });
     }
+=======
+>>>>>>> 4e42eac (Added ICP and Frontend)
 };
 
 module.exports = { errorHandler };

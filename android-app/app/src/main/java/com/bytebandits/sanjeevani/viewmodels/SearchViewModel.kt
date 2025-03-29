@@ -3,6 +3,7 @@ package com.bytebandits.sanjeevani.viewmodels
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Looper
+<<<<<<< HEAD
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -13,6 +14,9 @@ import com.bytebandits.sanjeevani.dto.HospitalListItem
 import com.bytebandits.sanjeevani.dto.HospitalsList
 import com.bytebandits.sanjeevani.dto.ownerLocation
 import com.bytebandits.sanjeevani.interfaces.NearbyHospitalsService
+=======
+import androidx.lifecycle.ViewModel
+>>>>>>> 4e42eac (Added ICP and Frontend)
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -20,6 +24,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+<<<<<<< HEAD
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.truncate
@@ -40,6 +45,15 @@ class SearchViewModel @Inject constructor(@ApplicationContext private val contex
 
     @SuppressLint("MissingPermission")
     fun onPermissionGranted(radius: Int) {
+=======
+import javax.inject.Inject
+
+@HiltViewModel
+class SearchViewModel @Inject constructor(@ApplicationContext private val context: Context) : ViewModel() {
+
+    @SuppressLint("MissingPermission")
+    fun onPermissionGranted() {
+>>>>>>> 4e42eac (Added ICP and Frontend)
         println("Permission Granted")
         val client = LocationServices.getFusedLocationProviderClient(context)
         val request = LocationRequest.Builder(20000).setMinUpdateIntervalMillis(10000)
@@ -51,10 +65,14 @@ class SearchViewModel @Inject constructor(@ApplicationContext private val contex
                 val location = currentLocation.locations
                 val lat = location[0].latitude
                 val lon = location[0].longitude
+<<<<<<< HEAD
 
                 println("Latitude: $lat, Longitude: $lon")
                 val ownerLocation = ownerLocation(lat.toString(), lon.toString(), radius)
                 searchResults(ownerLocation)
+=======
+                println("Latitude: $lat, Longitude: $lon")
+>>>>>>> 4e42eac (Added ICP and Frontend)
             }
 
         }, Looper.getMainLooper())
@@ -63,6 +81,7 @@ class SearchViewModel @Inject constructor(@ApplicationContext private val contex
     }
 
 
+<<<<<<< HEAD
     fun searchResults(ownerLocation : ownerLocation){
         viewModelScope.launch {
             try {
@@ -82,4 +101,10 @@ class SearchViewModel @Inject constructor(@ApplicationContext private val contex
             }
         }
     }
+=======
+    fun searchResults(){
+        
+    }
+
+>>>>>>> 4e42eac (Added ICP and Frontend)
 }

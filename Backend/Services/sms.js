@@ -1,5 +1,6 @@
 require('dotenv').config();
 const smsEvents = require('../eventBus');
+<<<<<<< HEAD
 const { Patient } = require('../Models/patient');
 let genai;
 
@@ -14,10 +15,13 @@ const parseResponse = (text) => {
     text = text.trim();
     return text;
 }
+=======
+>>>>>>> 4e42eac (Added ICP and Frontend)
 
 // POST method for sending message
 const send = async (data) => {
     try {
+<<<<<<< HEAD
         let { content, to } = data; // Extract data from the request
         if (!content || !to) {
             console.log("Invalid send Request!"); // Log error
@@ -29,6 +33,9 @@ const send = async (data) => {
         content = await translateToLanguage(content, patient.language); // Translate the content to the patient's language
         content = parseResponse(content); // Parse the response
 
+=======
+        const { content, to } = data; // Extract data from the request
+>>>>>>> 4e42eac (Added ICP and Frontend)
         const from = process.env.SEND_PHONE_NUMBER; // Extract the sender number from the environment variables
         console.log("Sending SMS to " + to + " with content: " + content); // Log the message
 
@@ -36,7 +43,12 @@ const send = async (data) => {
             method: "POST",
             headers: {
                 "x-api-key": process.env.SMS_API_TOKEN,
+<<<<<<< HEAD
                 "Content-Type": "application/json"
+=======
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+>>>>>>> 4e42eac (Added ICP and Frontend)
             },
             body: JSON.stringify({
                 content: content,
@@ -45,6 +57,11 @@ const send = async (data) => {
             })
         });
 
+<<<<<<< HEAD
+=======
+        const res = await response.json(); // Parse the response
+
+>>>>>>> 4e42eac (Added ICP and Frontend)
         if (!response.ok) {
             console.log("An error occured while sending SMS!"); // Log error
             console.log(response);
@@ -67,6 +84,7 @@ const receive = async (req, res) => {
         return res.status(400).json({ success: false, message: "No Body" });
     }
 
+<<<<<<< HEAD
     // Check if user is registered or not
     const patient = await Patient.findOne({ phoneno: from });
     if (!patient) {
@@ -94,6 +112,12 @@ const receive = async (req, res) => {
         console.log("Doctor type: " + doctorType); // Log the doctor type
 
         smsEvents.emit("book", { from, code: doctorType }); // Emit event to book an appointment
+=======
+    if (content == "0") { // 0 is the code to book an appointment
+        console.log("Appointment booking request received"); // Log the request
+
+        smsEvents.emit("register", { from }); // Emit event to book an appointment
+>>>>>>> 4e42eac (Added ICP and Frontend)
         return res.status(200).json({ success: true, message: "Appointment booking request received" });
     }
     else if (content == "1") { // 1 is the code to confirm appointment

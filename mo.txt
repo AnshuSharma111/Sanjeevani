@@ -1,0 +1,65 @@
+import HashMap "mo:base/HashMap";
+import Text "mo:base/Text";
+import Nat "mo:base/Nat";
+import Time "mo:base/Time";
+import Iter "mo:base/Iter";
+import Option "mo:base/Option";
+
+actor Inventory {
+  // Medicine structure (replaces MongoDB Schema)
+  type Medicine = {
+    name: Text;
+    quantity: Nat;
+    batchno: Text;
+    expiry: Time.Time;
+  };
+
+  // In-memory storage (acts as MongoDB)
+  private var medicines = HashMap.HashMap<Text, Medicine>(10, Text.equal, Text.hash);
+  private stable var medicineEntries : [(Text, Medicine)] = [];
+
+  system func preupgrade() {
+    medicineEntries := Iter.toArray(medicines.entries());
+  };
+
+  system func postupgrade() {
+    medicines := HashMap.fromIter<Text, Medicine>(medicineEntries.vals(), 10, Text.equal, Text.hash);
+  };
+
+  // 🟢 Add Medicine (Replaces MongoDB `.save()`)
+  public func addMedicine(id: Text, name: Text, quantity: Nat, batchno: Text, expiry: Time.Time) : async Text {
+    let medicine: Medicine = { name = name; quantity = quantity; batchno = batchno; expiry = expiry };
+    medicines.put(id, medicine);
+    return "Medicine added!";
+  };
+
+  // 🟡 Get One Medicine (Replaces `.findById()`)
+  public query func getMedicine(id: Text) : async ?Medicine {
+    return medicines.get(id);
+  };
+
+  // 🔵 Get All Medicines (Replaces `.find()`)
+  public query func getAllMedicines() : async [(Text, Medicine)] {
+    return Iter.toArray(medicines.entries());
+  };
+
+  // 🟠 Update Medicine (Replaces `.findByIdAndUpdate()`)
+  public func updateMedicine(id: Text, name: Text, quantity: Nat, batchno: Text, expiry: Time.Time) : async Text {
+    switch (medicines.get(id)) {
+      case (null) { return "Medicine not found!" };
+      case (?med) {
+        let updatedMedicine: Medicine = { name = name; quantity = quantity; batchno = batchno; expiry = expiry };
+        medicines.put(id, updatedMedicine);
+        return "Medicine updated!";
+      };
+    };
+  };
+
+  // 🔴 Delete Medicine (Replaces `.findByIdAndDelete()`)
+  public func deleteMedicine(id: Text) : async Text {
+    switch (medicines.remove(id)) {
+      case (null) { return "Medicine not found!" };
+      case (_) { return "Medicine deleted!" };
+    };
+  };
+};

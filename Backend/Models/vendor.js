@@ -9,4 +9,8 @@ const vendorSchema = new mongoose.Schema({
 
 const Vendor = mongoose.model('Vendor', vendorSchema);
 
+<<<<<<< HEAD
 module.exports = { Vendor };
+=======
+module.exports = { Vendor };
+>>>>>>> 4e42eac (Added ICP and Frontend)
