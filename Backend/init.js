@@ -12,7 +12,7 @@ const doctors = [
 const seedDoctors = async () => {
   await Doctor.deleteMany({});
   await Doctor.insertMany(doctors);
-  console.log("✅ Doctors populated!");
+  console.log("Doctors populated!");
   mongoose.connection.close();
 };
 

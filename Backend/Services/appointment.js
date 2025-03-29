@@ -232,6 +232,7 @@ const guide = async (data) => {
             1 to confirm an existing appointment
             2 to cancel an existing appointment
             The user sent: ${content}. Guide them accordingly.
+            Try and use the language they used in their message.
             Under no circumstance should you divert from the topic of booking an appointment.
         `;
 
