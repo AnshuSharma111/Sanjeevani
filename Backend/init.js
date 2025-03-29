@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { Doctor } = require("./Models/doctor");
+const { Doctor } = require("./models/doctor");
 require("dotenv").config();
 
 mongoose.connect(process.env.DB_URI);

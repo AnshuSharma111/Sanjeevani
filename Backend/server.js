@@ -8,6 +8,7 @@ const smsRouter = require('./Routers/sms');
 const receiptRouter = require('./Routers/receipt');
 const appointmentRouter = require('./Routers/appointment');
 const locationRouter = require('./Routers/location');
+const doctorRouter = require('./Routers/doctor');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { Vendor:User } = require('./Models/vendor');
@@ -115,6 +116,7 @@ app.use('/api/sms', smsRouter);
 app.use('/api/receipt', receiptRouter);
 app.use('/api/appointment', appointmentRouter);
 app.use('/api/location',locationRouter);
+app.use('/api/doctor', doctorRouter);
 
 // Error handling middleware
 const errorHandler = (err, req, res, next) => {
