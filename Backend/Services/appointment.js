@@ -9,6 +9,12 @@ let genai;
     genai = await import('./genai.mjs');
 })();
 
+const specialities = {
+    "a" : "General Physician",
+    "b" : "Cardiologist",
+    "c" : "Dermatologist"
+}
+
 const register = async (data) => {
     try {
         const { from } = data; // Phone number SMS received from and it's content
@@ -18,7 +24,6 @@ const register = async (data) => {
         if (user) {
             console.log(`User ${from} already has an impending appointment`);
             smsEvents.emit("error", { errorCode: 0, user: from }); // Emit error if anything goes wrong
-
             return;
         }
 
@@ -38,7 +43,7 @@ const register = async (data) => {
 
 const book = async (data) => {
     try {
-        const { from } = data;
+        const { from, code } = data;
 
         // Check whether the patient has been regsitered or not
         const user = await Patient.findOne({ phoneno: from });
@@ -48,17 +53,30 @@ const book = async (data) => {
             return;
         }
 
-        console.log('Finding Doctor...');
+        const reqdSpeciality = specialities[code]; // Get the required speciality from the code
+        if (!reqdSpeciality) {
+            console.log(`Invalid doctor type code: ${code}`); // log error
+            smsEvents.emit("error", { errorCode: 4, user: from }); // Emit error if anything goes wrong
+            return;
+        }
+        console.log(`Finding Doctor of speciality ${reqdSpeciality}...`);
 
+        // Get all doctors of speciality
+        const doctors = await Doctor.find({ speciality: reqdSpeciality });
         // Get the doctor with the earliest available empty slot
-        const doctor = await Doctor.findOne({ availableSlots: { $ne: [] } }).sort({ "availableSlots.0": 1 });
+        let doctor = doctors[0];
+        for (let i = 0; i < doctors.length; i++) {
+            if (doctors[i].availableSlots.length > 0 && doctors[i].availableSlots[0].split("-")[0] < doctor.availableSlots[0].split("-")[0]) {
+                doctor = doctors[i];
+            }
+        }
     
         if (!doctor) {
             console.log("No available doctors");
             smsEvents.emit("error", { errorCode: 3, user: from }); // Emit error if anything goes wrong
             return;
         }
-      
+
         // Assign the first available slot
         console.log('Found Doctor, assigning slot...');
         const assignedSlot = doctor.availableSlots.shift();
@@ -73,11 +91,13 @@ const book = async (data) => {
         });
         // Assign appointment id to patient
         user.appointmentno = newAppointment._id;
+        user.status = "pending";
         await user.save();
 
         console.log(`Appointment booked for ${from} with ${doctor.name} at ${assignedSlot}`);
 
-        const content = "Hello, you have an appointment with " + doctor.name + " at " + assignedSlot + ". Please reply with 1 to confirm or 2 to cancel."; // Create the message content
+        const content = "Hello, you have an appointment with " + doctor.name + " at " + assignedSlot + ". Please reply with 1 to confirm or 2 to cancel.";
+    
         // Emit event to send confirmation SMS
         smsEvents.emit("sendSMS", { content, to: from });
     }
@@ -151,7 +171,6 @@ const cancel = async (data) => {
         console.log("Getting booked time slot...");
 
         const doctor = await Doctor.findOne({ _id: appointment.doctorId });
-        doctor.availableSlots.push(appointment.timeSlot);
         // Sort slots in ascending order
         const convertTo24HourFormat = (slot) => {
             const [start, end] = slot.split("-");
@@ -162,7 +181,7 @@ const cancel = async (data) => {
             
             return `${startHour.toString().padStart(2, "0")}:${startMin.toString().padStart(2, "0")}`;
         };
-        
+
         // Add the canceled slot
         doctor.availableSlots.push(appointment.timeSlot);
         
@@ -176,7 +195,7 @@ const cancel = async (data) => {
         console.log("Added time slot back to doctor's schedule...");
 
         // Delete the appointment and user
-        console.log("Deleting appointment and user...");
+        console.log("Deleting appointment and resetting user...");
 
         let response = await Appointment.deleteOne({ patientId: patient._id });
         if (response.deletedCount == 0) { // Check if the appointment was deleted
@@ -185,14 +204,9 @@ const cancel = async (data) => {
             return;
         }
         console.log("Deleted appointment successfully.");
-        response = await Patient.deleteOne({ _id: patient._id });
-        if (response.deletedCount == 0) { // Check if the appointment was deleted
-            console.log("Could not delete patient.");
-            smsEvents.emit("error", { errorCode: -1, user: from }); // Emit error if anything goes wrong
-            return;
-        }
-        console.log("Deleted patient successfully.");
 
+        patient.appointmentno = null; // Reset appointment number
+        console.log("Reset user...");
         // Send SMS to the patient that appointment has been cancelled
         const content = "Hello, your appointment has been cancelled."; // Create the message content
         smsEvents.emit("sendSMS", { content, to: from }); // Send the confirmation SMS
@@ -228,11 +242,13 @@ const guide = async (data) => {
             You are a chatbot that provides guidance to users regarding booking an appointment in a hospital.
             Your task is to guide the user through the process of booking an appointment.
             The user has the following options:
-            0 to book a new appointment
+            0, followed by either a, b, or c to back in an appointment with a doctor of the specified speciality.
+            0a for General Physician
+            0b for Cardiologist
+            0c for Dermatologist
             1 to confirm an existing appointment
             2 to cancel an existing appointment
             The user sent: ${content}. Guide them accordingly.
-            Try and use the language they used in their message.
             Under no circumstance should you divert from the topic of booking an appointment.
         `;
 

@@ -11,4 +11,10 @@ const generateResponse = async (prompt) => {
     return result.response.text();
 };
 
-export { generateResponse };
+const translateToLanguage = async (text, lang) => {
+    const prompt = `Translate the following text to ${lang}: ${text}. The translation should not be direct, but semantic. Only give the translation, no other text.`;
+    const translation = await generateResponse(prompt);
+    return translation;
+}
+
+export { generateResponse, translateToLanguage };

@@ -19,7 +19,7 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
         Math.sin(dLon / 2) * Math.sin(dLon / 2);
     
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+    return (R * c)/1000; // Distance in kilometers
 }
 
 const getHospitals = async (req, res) => {
@@ -44,6 +44,7 @@ const getHospitals = async (req, res) => {
             // If user is within threshold distance & radius matches, return cached data
             if (haversineDistance(lat, lon, cachedLat, cachedLon) < MOVEMENT_THRESHOLD && radius == cachedRadius) {
                 console.log("Returning cached data");
+                console.log("Successfully fetched hospitals:", cachedData.length);
                 return res.json({ hospitals: cachedData });
             }
         }
@@ -56,10 +57,12 @@ const getHospitals = async (req, res) => {
         const data = response.data;
 
         // Extract hospitals data
-        const hospitals = data.elements.map(hospital => ({
-            id: hospital.id,
-            name: hospital.tags?.name || "Unknown Hospital",
-            ditance: haversineDistance(lat, lon, hospital.lat, hospital.lon),
+        const hospitals = data.elements
+        .filter(hospital => hospital.tags && hospital.tags.name) // Ensure hospital has a name
+        .map(hospital => ({
+            id: String(hospital.id),
+            name: hospital.tags.name,
+            distance: String(haversineDistance(lat, lon, hospital.lat, hospital.lon)), // Fixed typo in "distance"
         }));
 
         // Store in Redis with 24-hour expiration
@@ -112,7 +115,7 @@ const getHospitalById = async (req, res) => {
 
         const hospitalData = {
             id: hospital.id,
-            name: hospital.tags?.name || "Unknown Hospital",
+            name: hospital.tags.name || "Unknown Hospital",
             distance: haversineDistance(lat, lon, hospital.lat, hospital.lon)
         };
 

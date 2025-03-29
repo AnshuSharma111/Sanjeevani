@@ -1,10 +1,34 @@
 require('dotenv').config();
 const smsEvents = require('../eventBus');
+const { Patient } = require('../Models/patient');
+let genai;
+
+(async () => {
+    genai = (await import('./genai.mjs'));
+})();
+
+// Parse LLM responses
+const parseResponse = (text) => {
+    // Remove *** and ** from the text
+    text = text.replace(/\*\*\*/g, "").replace(/\*\*/g, "");
+    text = text.trim();
+    return text;
+}
 
 // POST method for sending message
 const send = async (data) => {
     try {
-        const { content, to } = data; // Extract data from the request
+        let { content, to } = data; // Extract data from the request
+        if (!content || !to) {
+            console.log("Invalid send Request!"); // Log error
+            return;
+        }
+
+        const patient = await Patient.findOne({ phoneno: to }); // Find the patient
+        const { translateToLanguage } = genai;
+        content = await translateToLanguage(content, patient.language); // Translate the content to the patient's language
+        content = parseResponse(content); // Parse the response
+
         const from = process.env.SEND_PHONE_NUMBER; // Extract the sender number from the environment variables
         console.log("Sending SMS to " + to + " with content: " + content); // Log the message
 
@@ -43,10 +67,33 @@ const receive = async (req, res) => {
         return res.status(400).json({ success: false, message: "No Body" });
     }
 
-    if (content == "0") { // 0 is the code to book an appointment
+    // Check if user is registered or not
+    const patient = await Patient.findOne({ phoneno: from });
+    if (!patient) {
+        // Identify the user's language
+        const prompt = `Identify the user's language from the following message: ${content}\nAnswer in one word only.`;
+        const { generateResponse } = genai;
+        let NotTrimlanguage = await generateResponse(prompt); // Get the language using genai
+        const language = NotTrimlanguage.trimEnd();
+
+        console.log("User's language identified as: " + language); // Log the identified language
+        // Add patient to the database if not registered
+        const newPatient = new Patient({ phoneno: from, language: language });
+        await newPatient.save(); // Save the new patient to the database
+    }
+
+    if (content[0] == "0") { // 0 is the code to book an appointment with a general physician
         console.log("Appointment booking request received"); // Log the request
 
-        smsEvents.emit("register", { from }); // Emit event to book an appointment
+        const len = content.length; // Get the length of the content
+        if (len < 2) {
+            smsEvents.emit("guide", { content, from});
+            return;
+        }
+        const doctorType = content[1]; // Get the doctor type from the content
+        console.log("Doctor type: " + doctorType); // Log the doctor type
+
+        smsEvents.emit("book", { from, code: doctorType }); // Emit event to book an appointment
         return res.status(200).json({ success: true, message: "Appointment booking request received" });
     }
     else if (content == "1") { // 1 is the code to confirm appointment

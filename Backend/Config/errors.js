@@ -62,6 +62,16 @@ const errorHandler = async (data) => {
         // Emit event to send confirmation SMS
         smsEvents.emit("sendSMS", { content, to: user });
     }
+    // Error Code 4: Invalid specilization code
+    else if (errorCode == 4) {
+        console.log("Sending SMS informing user of invalid specialization code..."); // Log the message
+
+        let content = "The specialization code you provided is invalid. Please reply with 0 to book an appointment."; // Create the message content
+
+
+        // Emit event to send confirmation SMS
+        smsEvents.emit("sendSMS", { content, to: user });
+    }
 };
 
 module.exports = { errorHandler };
