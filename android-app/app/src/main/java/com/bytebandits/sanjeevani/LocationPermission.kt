@@ -13,7 +13,7 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 @SuppressLint("PermissionLaunchedDuringComposition")
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun LocationPermissions(onPermissionGranted: () -> Unit) {
+fun LocationPermissions(onPermissionGranted: () -> Unit,  onPermissionDenied: () -> Unit, resetTrigger: () -> Unit) {
     val context = LocalContext.current
     val locationPermissionState = rememberMultiplePermissionsState(
         listOf(
@@ -34,9 +34,11 @@ fun LocationPermissions(onPermissionGranted: () -> Unit) {
             onPermissionGranted()
         }
         locationPermissionState.shouldShowRationale -> {
+            onPermissionDenied()
             Toast.makeText(context, "Location permission is required to find nearby hospitals", Toast.LENGTH_LONG).show()
         }
 
     }
+    resetTrigger()
     }
 

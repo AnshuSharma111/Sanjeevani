@@ -1,5 +1,6 @@
 package com.bytebandits.sanjeevani.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,7 +26,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,13 +36,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.bytebandits.sanjeevani.LocationPermissions
 import com.bytebandits.sanjeevani.R
@@ -48,19 +54,24 @@ import com.bytebandits.sanjeevani.viewmodels.SearchViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Home(modifier: Modifier = Modifier) {
-    val radiusOptions = listOf("2 km", "5 km", "10 km")
+fun Home(navHostController: NavHostController, searchViewModel: SearchViewModel, modifier: Modifier = Modifier) {
+    val radiusOptions = listOf("2", "5", "10")
     val hospitalOptions = listOf("General", "Special")
     var radiusExpanded by remember { mutableStateOf(false) }
     var hospitalExpanded by remember { mutableStateOf(false) }
     var radiusSelected by remember { mutableStateOf(radiusOptions[1]) }
+    var finalRadius = radiusSelected.toInt()*1000
     var hospitalSelected by remember { mutableStateOf(hospitalOptions[1]) }
 
     var showPermissionDialog by remember { mutableStateOf(false) }
 
     val loading by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.global_location))
+    var animation by remember { mutableStateOf(false) }
 
-    val searchViewModel: SearchViewModel = hiltViewModel()
+
+    val hospitalsList by searchViewModel.hospitalList.observeAsState(emptyList())
+
+    val context = LocalContext.current
 
     Box(modifier = modifier
         .fillMaxSize()
@@ -68,14 +79,14 @@ fun Home(modifier: Modifier = Modifier) {
         Column(modifier = Modifier.offset(y = (50).dp)) {
 
             Text(
-                "Aarogya Sangam",
+                "Sanjeevani",
                 fontFamily = Poppins,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 24.sp,
                 modifier = Modifier.padding(bottom = 30.dp)
             )
             Card(
-                colors = CardDefaults.elevatedCardColors(Color(0xFF7FFFD4)),
+                colors = CardDefaults.elevatedCardColors(Color(0xFF99E5C9)),
                 modifier = Modifier,
                 shape = RoundedCornerShape(20.dp),
                 elevation = CardDefaults.elevatedCardElevation(10.dp)
@@ -198,7 +209,7 @@ fun Home(modifier: Modifier = Modifier) {
             ) {
                 LottieAnimation(
                     composition = loading, modifier = Modifier.size(300.dp), // Base animation
-                    iterations = 2
+                    iterations = if (animation) LottieConstants.IterateForever else 1
                 )
             }
 
@@ -211,6 +222,7 @@ fun Home(modifier: Modifier = Modifier) {
                 Button(
                     onClick = {
                         showPermissionDialog = true
+                        animation = true
                     },
                     modifier = Modifier
                         .fillMaxWidth(0.9f)
@@ -224,9 +236,18 @@ fun Home(modifier: Modifier = Modifier) {
 
                 if (showPermissionDialog) {
                     LocationPermissions(onPermissionGranted = {
-                        searchViewModel.onPermissionGranted()
-                    })
+                        searchViewModel.onPermissionGranted(radius = finalRadius)
+                    }, onPermissionDenied = {
+                        Toast.makeText(context, "Location permission is required to find nearby hospitals", Toast.LENGTH_LONG).show()
+                    }, resetTrigger = {showPermissionDialog = false})
                     showPermissionDialog = false // Dismiss after checking permissions
+                }
+
+                LaunchedEffect(hospitalsList) {
+                    if (hospitalsList.isNotEmpty()) {
+                        animation = false
+                        navHostController.navigate("searchResults") // Replace with your actual navigation route
+                    }
                 }
             }
 
