@@ -3,13 +3,11 @@ const Doctor = require('../Models/doctor').Doctor; // Import doctor model
 const Appointment = require('../Models/appointment').Appointment; // Import appointment model
 const smsEvents = require('../eventBus'); // Import event bus
 
-
 let genai;
 
 (async () => {
     genai = await import('./genai.mjs');
 })();
-
 
 const register = async (data) => {
     try {
@@ -31,7 +29,7 @@ const register = async (data) => {
 
         console.log("Patient registered successfully"); // log
 
-        smsEvents.emit("book", { from: from }); // Emit patientRegistered event
+        smsEvents.emit("book", { from: from }); // Emit patient Registered event
     } catch (error) {
         console.log(`An error occurred: ${error}`); // log error
         smsEvents.emit("error", { errorCode: -1, user: from }); // Emit error event
@@ -154,6 +152,25 @@ const cancel = async (data) => {
 
         const doctor = await Doctor.findOne({ _id: appointment.doctorId });
         doctor.availableSlots.push(appointment.timeSlot);
+        // Sort slots in ascending order
+        const convertTo24HourFormat = (slot) => {
+            const [start, end] = slot.split("-");
+            
+            // Convert start time
+            let [startHour, startMin] = start.split(":").map(Number);
+            if (startHour < 9) startHour += 12; // Convert AM/PM properly
+            
+            return `${startHour.toString().padStart(2, "0")}:${startMin.toString().padStart(2, "0")}`;
+        };
+        
+        // Add the canceled slot
+        doctor.availableSlots.push(appointment.timeSlot);
+        
+        // Sort the slots correctly
+        doctor.availableSlots.sort((a, b) => {
+            return convertTo24HourFormat(a).localeCompare(convertTo24HourFormat(b));
+        });
+
         await doctor.save();
 
         console.log("Added time slot back to doctor's schedule...");

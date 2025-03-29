@@ -1,3 +1,8 @@
+const Patient = require('../Models/patient').Patient; // Import patient model
+const Doctor = require('../Models/doctor').Doctor; // Import doctor model
+const Appointment = require('../Models/appointment').Appointment; // Import appointment model
+const smsEvents = require('../eventBus'); // Import event bus
+
 const errorHandler = async (data) => {
     const { errorCode, user } = data; // Extract error code from the request. Code, Phone Number
 
