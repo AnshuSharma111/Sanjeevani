@@ -78,7 +78,8 @@ const getHospitals = async (req, res) => {
 
 const getHospitalById = async (req, res) => {
     try {
-        const { id } = req.params;
+        let { id, lat, lon } = req.query;
+        id = Number(id); // Convert ID to number
         console.log("Received request to fetch hospital by ID:", id);
 
         // Validate input
@@ -88,10 +89,43 @@ const getHospitalById = async (req, res) => {
         }
 
         // Check Redis for cached data
+        const cacheKey = `hospital:${id}`;
+        const cachedData = await client.get(cacheKey);
+
+        if (cachedData) {
+            console.log("Returning cached hospital data");
+            return res.status(200).json(JSON.parse(cachedData));
+        }
+
+        console.log("Querying Overpass API for hospital by ID...");
+        const overpassQuery = `[out:json];node(${id});out;`;
+        const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
+
+        const response = await axios.get(overpassUrl);
+        const data = response.data;
+
+        const hospital = data.elements[0];
+        if (!hospital) {
+            console.log("Hospital not found.");
+            return res.status(404).json({ error: "Hospital not found." });
+        }
+
+        const hospitalData = {
+            id: hospital.id,
+            name: hospital.tags?.name || "Unknown Hospital",
+            distance: haversineDistance(lat, lon, hospital.lat, hospital.lon)
+        };
+
+        // Store in Redis with 24-hour expiration
+        await client.setEx(cacheKey, CACHE_EXPIRATION, JSON.stringify(hospitalData));
+        console.log("Stored hospital data in Redis cache.");
+
+        console.log("Successfully fetched hospital:", hospitalData);
+        res.status(200).json(hospitalData);
     }
     catch (error) {
         console.error("Error fetching hospital by ID:", error.message);
         res.status(500).json({ error: "An error occurred while fetching the hospital." });
     }
 }
-module.exports = { getHospitals };
+module.exports = { getHospitals, getHospitalById };

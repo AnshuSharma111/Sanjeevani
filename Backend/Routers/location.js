@@ -7,6 +7,7 @@ const locationController = require('../Services/location');
 
 // set up routes
 router.post('/hospitals', locationController.getHospitals);
+router.get('/hospital', locationController.getHospitalById);
 
 // export router
 module.exports = router;
