@@ -1,0 +1,39 @@
+# Gradle-related files
+.gradle/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+**/local.properties
+
+# Android Studio-specific files
+.idea/
+**/.cxx/
+**/.settings/
+**/.classpath
+**/.project
+**/captures/
+
+# Generated files
+*.apk
+*.aab
+*.iml
+*.log
+**/lint/intermediates/
+**/lint/generated/
+
+# Keystore files (if using a debug/release keystore)
+*.keystore
+*.jks
+
+# NDK and CMake
+**/obj/
+**/.externalNativeBuild/
+
+# Dependency caches
+**/.gradle/
+**/caches/
+**/wrapper/dists/
+
+# Personal settings
+**/.vscode/
+**/.DS_Store
+**/Thumbs.db
