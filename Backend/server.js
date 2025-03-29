@@ -7,6 +7,7 @@ const medicineRouter = require('./Routers/medicine');
 const smsRouter = require('./Routers/sms');
 const receiptRouter = require('./Routers/receipt');
 const appointmentRouter = require('./Routers/appointment');
+const locationRouter = require('./Routers/location');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { Vendor:User } = require('./Models/vendor');
@@ -81,7 +82,6 @@ app.use(cors({
 }));
 app.use(express.json());
 
-
 // Routes
 app.get('/', (req, res) => {
     res.send('Welcome to the Inventory Management API');
@@ -114,6 +114,7 @@ app.use('/api/medicine', medicineRouter);
 app.use('/api/sms', smsRouter);
 app.use('/api/receipt', receiptRouter);
 app.use('/api/appointment', appointmentRouter);
+app.use('/api/location',locationRouter);
 
 // Error handling middleware
 const errorHandler = (err, req, res, next) => {
