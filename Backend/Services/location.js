@@ -76,4 +76,22 @@ const getHospitals = async (req, res) => {
     }
 };
 
+const getHospitalById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log("Received request to fetch hospital by ID:", id);
+
+        // Validate input
+        if (!id) {
+            console.log("Missing hospital ID.");
+            return res.status(400).json({ error: "Please provide a hospital ID." });
+        }
+
+        // Check Redis for cached data
+    }
+    catch (error) {
+        console.error("Error fetching hospital by ID:", error.message);
+        res.status(500).json({ error: "An error occurred while fetching the hospital." });
+    }
+}
 module.exports = { getHospitals };
